@@ -21,7 +21,7 @@ def load():
     global dfs, sheet_names
 
     for sheet_name in sheet_names:
-        df = pd.read_excel('./pokemen.xlsx', sheet_name=sheet_name)
+        df = pd.read_excel('DB_Hw1/pokemen.xlsx', sheet_name=sheet_name)
         df.columns = ['編號', '中文', '日文', '英文', '屬性', '額外屬性', 'HP',	'攻擊',	'防禦',	'特攻',	'特防',	'速度']
         df = df.dropna(subset=['編號'])
         for index, row in df.iterrows():
@@ -31,7 +31,7 @@ def load():
         dfs[sheet_name] = df
 
 #-----------------------------------------------------------------------------------------------------------屬性
-    df = pd.read_excel('./pokemen.xlsx', sheet_name='屬性相互克制')
+    df = pd.read_excel('DB_Hw1/pokemen.xlsx', sheet_name='屬性相互克制')
     df.columns = ['屬性', '一般', '格鬥', '飛行', '毒', '地面', '岩石', '蟲', '幽靈', '鋼', '火', '水', '草', '電', '超能力', '冰', '龍', '惡', '妖精']
     dfs[attributes] = df
 
@@ -183,7 +183,7 @@ def project():
             print( "無效的輸出選項" )
             return
         
-    print("\t".join(attributes_dict[int(option)] for option in out))
+    print("\t".join(output_data))
     matching_rows = []
     for index, row in dfs[table_name].iterrows():
         print( *row[output_data], sep="\t" )
@@ -276,7 +276,8 @@ def set_inter(df1, df2):
     intersection = set_diff(intersection, diff2)
     
     if intersection.empty:
-        return "交集為空"
+        print("交集為空")
+        return pd.DataFrame()
     return intersection
 
 #------------------------------------------------------------------------------------------------------------division
@@ -285,8 +286,8 @@ def division(df1, df2):
     intersection_set = set_inter(df1, df2)
     
     # 交集為空
-    if intersection_set == "交集為空":
-        return "交集為空"
+    if intersection_set.empty:
+        return pd.DataFrame()
     
     diff1 = set_diff(df1, df2)
     
