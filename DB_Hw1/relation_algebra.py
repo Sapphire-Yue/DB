@@ -255,6 +255,9 @@ def cartesian_product(df1, df2):
 #------------------------------------------------------------------------------------------------------------union
 def union(df1, df2):
 
+    df1 = df1.reset_index(drop=True)
+    df2 = df2.reset_index(drop=True)
+
     union = pd.concat([df1, df2]).drop_duplicates().reset_index(drop=True)
     return union
 
@@ -282,7 +285,7 @@ def set_inter(df1, df2):
 
 #------------------------------------------------------------------------------------------------------------division
 def division(df1, df2):
-
+    """
     intersection_set = set_inter(df1, df2)
     
     # 交集為空
@@ -295,6 +298,23 @@ def division(df1, df2):
     division_result = union(diff1, intersection_set)
     
     return division_result
+    """
+    # 找到關係 R 中存在但不在 S 中存在的屬性集合 Y
+    common_columns = df1.columns.intersection(df2.columns)
+    Y = df1.columns.difference(df2.columns)
+    
+    # 找到 R 中屬性 Y 的所有值組
+    result = df1
+    
+    # 篩選出在 S 中每個值組 ts 都存在的值組
+    for index, row in df2.iterrows():
+        condition = True
+        for column in common_columns:
+            condition = condition & (result[column] == row[column])
+        result = result[~condition]
+    
+    # 返回關係 T(Y)
+    return result[Y] if not result.empty else pd.DataFrame()
 
 #------------------------------------------------------------------------------------------------------------natural_join
 def natural_join(df1, df2):
@@ -310,9 +330,27 @@ def natural_join(df1, df2):
     if not common_columns:
         return "沒有共同列名"
     
-    # 根據共同列名進行交集
-    join_result = set_inter(df1, df2)
+    # 找到共同列名的索引
+    idx1 = [columns1.index(col) for col in common_columns]
+    idx2 = [columns2.index(col) for col in common_columns]
     
+    # 根據共同列名進行交集
+    join_result = pd.DataFrame(columns=columns1+columns2)  # 建立空的 DataFrame 來存儲結果
+    for index1, row1 in df1.iterrows():
+        for index2, row2 in df2.iterrows():
+            # 檢查共同列的值是否相等
+            match = True
+            for i in range(len(common_columns)):
+                if row1.iloc[idx1[i]] != row2.iloc[idx2[i]]:
+                    match = False
+                    break
+            if match:
+                # 合併兩行並添加到結果中
+                combined_row = pd.concat([row1, row2], ignore_index=True)
+                join_result = join_result.append(combined_row, ignore_index=True)
+    
+    if join_result.empty:
+        print("自然集合為空")
     return join_result
 
 
@@ -355,10 +393,11 @@ def print_main():
 
 def print_result(result):
 
-    print(result)
+    if not result.empty:
+        print(result)
 
-    # store
-    agree_store(result)
+        # store
+        agree_store(result)
 
 #------------------------------------------------------------------------------------------------------------main
 load()
