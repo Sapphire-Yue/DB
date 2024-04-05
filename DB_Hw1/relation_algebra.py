@@ -12,7 +12,6 @@ sheet_names = [
     '第八世代寶可夢',
     '第九世代寶可夢',
 ]
-attributes = '屬性相互克制'
 dfs = {}
 
 #-----------------------------------------------------------------------------------------------------------寶可夢圖鑑
@@ -29,11 +28,6 @@ def load():
                 df.at[index, '屬性'] = row['屬性'] + ' / ' + row['額外屬性']
         df = df.drop(columns=['額外屬性'])
         dfs[sheet_name] = df
-
-#-----------------------------------------------------------------------------------------------------------屬性
-    df = pd.read_excel('DB_Hw1/pokemen.xlsx', sheet_name='屬性相互克制')
-    df.columns = ['屬性', '一般', '格鬥', '飛行', '毒', '地面', '岩石', '蟲', '幽靈', '鋼', '火', '水', '草', '電', '超能力', '冰', '龍', '惡', '妖精']
-    dfs[attributes] = df
 
 #-----------------------------------------------------------------------------------------------------------測試讀檔
     """
@@ -145,19 +139,6 @@ def select():
     else:
         matching_df = pd.DataFrame(matching_rows, columns = dfs[table_name].columns)
         agree_store(matching_df)
-    
-
-def select2():
-    found = False
-    name = input("寶可夢屬性: ")
-    for index, row in dfs[attributes].iterrows():
-        if name == row["屬性"]:
-            row_values = row[['一般', '格鬥', '飛行', '毒', '地面', '岩石', '蟲', '幽靈', '鋼', '火', '水', '草', '電', '超能力', '冰', '龍', '惡', '妖精']]
-            values_str = ', '.join([f"{column}: {value}" for column, value in row_values.items()])
-            print(values_str)
-            found = True
-    if not found:
-        print("未找到與輸入名稱匹配的項目。")
 
 #------------------------------------------------------------------------------------------------------------project
 def project():
@@ -435,8 +416,6 @@ while True:
         tables_schema()
     elif command == '11':
         reload()
-    elif  command == "select2":
-        select2()
     else:
         print("Invalid command. Please enter again.")
 
