@@ -11,7 +11,8 @@ sheet_names = [
     '第七世代寶可夢',
     '第八世代寶可夢',
     '第九世代寶可夢',
-]
+    '全圖鑑',
+] 
 dfs = {}
 
 #-----------------------------------------------------------------------------------------------------------寶可夢圖鑑
@@ -299,7 +300,7 @@ def division(df1, df2):
 
 #------------------------------------------------------------------------------------------------------------natural_join
 def natural_join(df1, df2):
-    
+    """
     # 取得兩個表格的列名
     columns1 = df1.columns.tolist()
     columns2 = df2.columns.tolist()
@@ -315,8 +316,11 @@ def natural_join(df1, df2):
     idx1 = [columns1.index(col) for col in common_columns]
     idx2 = [columns2.index(col) for col in common_columns]
     
+    # 初始化結果 DataFrame
+    join_result = pd.DataFrame(columns=columns1+df2.loc[:, ~df2.columns.isin(common_columns)].columns.tolist())
+    print( join_result.columns)
+    
     # 根據共同列名進行交集
-    join_result = pd.DataFrame(columns=columns1+columns2)  # 建立空的 DataFrame 來存儲結果
     for index1, row1 in df1.iterrows():
         for index2, row2 in df2.iterrows():
             # 檢查共同列的值是否相等
@@ -328,12 +332,46 @@ def natural_join(df1, df2):
             if match:
                 # 合併兩行並添加到結果中
                 combined_row = pd.concat([row1, row2], ignore_index=True)
-                join_result = join_result.append(combined_row, ignore_index=True)
+                join_result = pd.concat([join_result, combined_row], ignore_index=True)
     
     if join_result.empty:
         print("自然集合為空")
+        
     return join_result
+    """
 
+    # 取得兩個表格的列名
+    columns1 = df1.columns.tolist()
+    columns2 = df2.columns.tolist()
+
+    # 共同列名
+    common_columns = list(set(columns1) & set(columns2))
+
+    # 無共同列名
+    if not common_columns:
+        return "沒有共同列名"
+
+    # 初始化結果 DataFrame
+    join_result = pd.DataFrame(columns=columns1 + [col for col in columns2 if col not in common_columns])
+
+    # 根據共同列名進行交集
+    for index1, row1 in df1.iterrows():
+        for index2, row2 in df2.iterrows():
+            match = True
+            # 檢查共同列的值是否相等
+            for col in common_columns:
+                if row1[col] != row2[col]:
+                    match = False
+                    break
+            if match:
+                # 合併兩行並添加到結果中
+                combined_row = {**row1, **{col: row2[col] for col in columns2 if col not in common_columns}}
+                join_result = join_result._append(combined_row, ignore_index=True)
+
+    if join_result.empty:
+        print("自然集合為空")
+
+    return join_result
 
 #------------------------------------------------------------------------------------------------------------list
 def table():
