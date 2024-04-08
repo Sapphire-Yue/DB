@@ -78,12 +78,12 @@ def select():
     for i, column in enumerate(dfs[table_name].columns):
         print(f"{i+1}: {column}")
 
-    search_input = input("請輸入要搜尋的列名編號、搜尋值與比較運算子，以空格分隔: ").split()
+    search_input = input("請輸入要搜尋的列名編號、搜尋值與比較運算子，以空格分隔 (若列名查詢1~5，比較運算子請輸入'=' or '!='): ").split()
     search_columns = [dfs[table_name].columns[int(search_input[0]) - 1]]
     search_values = search_input[1::2]
     comparison_operators = search_input[2::3]
 
-    if len(search_input) % 3 != 0:
+    if len(search_input) % 3 != 0 or ((int(search_input[0]) >= 1 and int(search_input[0]) <= 5) and (search_input[2::3] != '=' and search_input[2::3] != '!=')):
         print("輸入格式錯誤。請按照 '列名編號 搜尋值 比較運算子' 格式輸入，並以空格分隔。")
         return
     
@@ -100,19 +100,19 @@ def select():
                     match = False
                     break
             elif op == '>':
-                if not (str(row[column]) > value):
+                if not (int(row[column]) > int(value)):
                     match = False
                     break
             elif op == '>=':
-                if not (str(row[column]) >= value):
+                if not (int(row[column]) >= int(value)):
                     match = False
                     break
             elif op == '<':
-                if not (str(row[column]) < value):
+                if not (int(row[column]) < int(value)):
                     match = False
                     break
             elif op == '<=':
-                if not (str(row[column]) <= value):
+                if not (int(row[column]) <= int(value)):
                     match = False
                     break
             elif op == '!=':
@@ -284,61 +284,21 @@ def division(df1, df2):
     # 找到關係 R 中存在但不在 S 中存在的屬性集合 Y
     common_columns = df1.columns.intersection(df2.columns)
     Y = df1.columns.difference(df2.columns)
-    
-    # 找到 R 中屬性 Y 的所有值組
-    result = df1
-    
-    # 篩選出在 S 中每個值組 ts 都存在的值組
-    for index, row in df2.iterrows():
-        condition = True
-        for column in common_columns:
-            condition = condition & (result[column] == row[column])
-        result = result[~condition]
-    
-    # 返回關係 T(Y)
-    return result[Y] if not result.empty else pd.DataFrame()
+
+    # 初始化結果 DataFrame
+    result = pd.DataFrame(columns=df1.columns)
+
+    # 篩選出在 S 中每個值組都存在的值組
+    df2_rows = list(df2.itertuples(index=False, name=None))
+    for _, row in df1.iterrows():
+        if tuple(row[common_columns]) not in df2_rows:
+            result = result.append(row, ignore_index=True)
+
+    # 返回結果
+    return result if not result.empty else pd.DataFrame()
 
 #------------------------------------------------------------------------------------------------------------natural_join
 def natural_join(df1, df2):
-    """
-    # 取得兩個表格的列名
-    columns1 = df1.columns.tolist()
-    columns2 = df2.columns.tolist()
-    
-    # 共同列名
-    common_columns = list(set(columns1) & set(columns2))
-    
-    # 無共同列名
-    if not common_columns:
-        return "沒有共同列名"
-    
-    # 找到共同列名的索引
-    idx1 = [columns1.index(col) for col in common_columns]
-    idx2 = [columns2.index(col) for col in common_columns]
-    
-    # 初始化結果 DataFrame
-    join_result = pd.DataFrame(columns=columns1+df2.loc[:, ~df2.columns.isin(common_columns)].columns.tolist())
-    print( join_result.columns)
-    
-    # 根據共同列名進行交集
-    for index1, row1 in df1.iterrows():
-        for index2, row2 in df2.iterrows():
-            # 檢查共同列的值是否相等
-            match = True
-            for i in range(len(common_columns)):
-                if row1.iloc[idx1[i]] != row2.iloc[idx2[i]]:
-                    match = False
-                    break
-            if match:
-                # 合併兩行並添加到結果中
-                combined_row = pd.concat([row1, row2], ignore_index=True)
-                join_result = pd.concat([join_result, combined_row], ignore_index=True)
-    
-    if join_result.empty:
-        print("自然集合為空")
-        
-    return join_result
-    """
 
     # 取得兩個表格的列名
     columns1 = df1.columns.tolist()
@@ -352,7 +312,7 @@ def natural_join(df1, df2):
         return "沒有共同列名"
 
     # 初始化結果 DataFrame
-    join_result = pd.DataFrame(columns=columns1 + [col for col in columns2 if col not in common_columns])
+    join_result = pd.DataFrame(columns=columns1 + [column for column in columns2 if column not in common_columns])
 
     # 根據共同列名進行交集
     for index1, row1 in df1.iterrows():
@@ -365,7 +325,7 @@ def natural_join(df1, df2):
                     break
             if match:
                 # 合併兩行並添加到結果中
-                combined_row = {**row1, **{col: row2[col] for col in columns2 if col not in common_columns}}
+                combined_row = {**row1, **{column: row2[column] for column in columns2 if column not in common_columns}}
                 join_result = join_result._append(combined_row, ignore_index=True)
 
     if join_result.empty:
