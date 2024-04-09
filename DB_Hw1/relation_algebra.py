@@ -12,6 +12,8 @@ sheet_names = [
     '第八世代寶可夢',
     '第九世代寶可夢',
     '全圖鑑',
+    '被除數',
+    '除數',
 ] 
 dfs = {}
 
@@ -200,23 +202,23 @@ def rename():
 def binary_operaters_interface():
 
     table()
-
+    
     # 輸入要相乘的表格
     table_id1 = input("請輸入第一個表格的編號: ")
     if not table_id1.isdigit() or int(table_id1) < 1 or int(table_id1) > len(dfs):
         print("無效的表格編號。")
-        return
+        return pd.DataFrame(), pd.DataFrame()
     table_name1 = list(dfs.keys())[int( table_id1 ) - 1]
 
     table_id2 = input("請輸入第二個表格的編號: ")
     if not table_id2.isdigit() or int(table_id2) < 1 or int(table_id2) > len(dfs):
         print("無效的表格編號。")
-        return
+        return pd.DataFrame(), pd.DataFrame()
     table_name2 = list(dfs.keys())[int( table_id2 ) - 1]
 
     if table_name1 not in dfs or table_name2 not in dfs:
         print("表格名稱不存在")
-        return None
+        return pd.DataFrame(), pd.DataFrame()
 
     df1 = dfs[table_name1]
     df2 = dfs[table_name2]
@@ -271,11 +273,13 @@ def set_inter(df1, df2):
 #------------------------------------------------------------------------------------------------------------division
 def division(df1, df2):
 
-    # 找到關係 R 中存在但不在 S 中存在的屬性集合 Y
+    print(df1)
+    print(df2)
+    # 找到 df1 中存在但不在 df2 中存在的屬性集合
     common_columns = df1.columns.intersection(df2.columns)
     diff_attributes = df1.columns.difference(df2.columns)
     if diff_attributes.any() == False:
-        print("無相同屬性")
+        print("無相異屬性")
         return pd.DataFrame()
 
     # 取出 df1 和 df2 中不同的屬性部分
@@ -294,7 +298,10 @@ def division(df1, df2):
     # 刪除重複行
     result = result.drop_duplicates()
 
-    return result if not result.empty else pd.DataFrame()
+    if result.empty:
+        print("結果為空")
+        return pd.DataFrame()
+    return result
 
 #------------------------------------------------------------------------------------------------------------natural_join
 def natural_join(df1, df2):
@@ -393,22 +400,28 @@ while True:
         rename()
     elif command == '4':
         table1, table2 = binary_operaters_interface()
-        print_result(cartesian_product(table1, table2))
+        if not table1.empty and not table2.empty:
+            print_result(cartesian_product(table1, table2))
     elif command == '5':
         table1, table2 = binary_operaters_interface()
-        print_result(union(table1, table2))
+        if not table1.empty and not table2.empty:
+            print_result(union(table1, table2))
     elif command == '6':
         table1, table2 = binary_operaters_interface()
-        print_result(set_diff(table1, table2))
+        if not table1.empty and not table2.empty:
+            print_result(set_diff(table1, table2))
     elif command == '7':
         table1, table2 = binary_operaters_interface()
-        print_result(set_inter(table1, table2))
+        if not table1.empty and not table2.empty:
+            print_result(set_inter(table1, table2))
     elif command == '8':
         table1, table2 = binary_operaters_interface()
-        print_result(division(table1, table2))
+        if not table1.empty and not table2.empty:
+            print_result(division(table1, table2))
     elif command == '9':
         table1, table2 = binary_operaters_interface()
-        print_result(natural_join(table1, table2))
+        if not table1.empty and not table2.empty:
+            print_result(natural_join(table1, table2))
     elif command == '10':
         tables_schema()
     elif command == '11':
