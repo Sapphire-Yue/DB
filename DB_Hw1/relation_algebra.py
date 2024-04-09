@@ -202,7 +202,7 @@ def rename():
 def binary_operaters_interface():
 
     table()
-    
+
     # 輸入要相乘的表格
     table_id1 = input("請輸入第一個表格的編號: ")
     if not table_id1.isdigit() or int(table_id1) < 1 or int(table_id1) > len(dfs):
@@ -273,8 +273,6 @@ def set_inter(df1, df2):
 #------------------------------------------------------------------------------------------------------------division
 def division(df1, df2):
 
-    print(df1)
-    print(df2)
     # 找到 df1 中存在但不在 df2 中存在的屬性集合
     common_columns = df1.columns.intersection(df2.columns)
     diff_attributes = df1.columns.difference(df2.columns)
@@ -358,6 +356,25 @@ def tables_schema():
         print(", ".join(df.columns.tolist()))
     print("=====================")
 
+def print_data():
+
+    table()
+    
+    # 輸入要相乘的表格
+    table_id = input("請輸入表格的編號: ")
+    if not table_id.isdigit() or int(table_id) < 1 or int(table_id) > len(dfs):
+        print("無效的表格編號。")
+        return
+    table_name = list(dfs.keys())[int( table_id ) - 1]
+
+    for column in dfs[table_name].columns:
+        print(column, end='\t')
+    print()
+
+    for index, row in dfs[table_name].iterrows():
+        # print value
+        print(*row.values, sep='\t')
+
 
 #------------------------------------------------------------------------------------------------------------reload
 def reload():
@@ -370,7 +387,7 @@ def reload():
 #------------------------------------------------------------------------------------------------------------print
 def print_main():
 
-    options = ["Quit", "Select", "Project", "Rename", "Cartesian Product", "Set Union", "Set Difference", "Set Intersection", "Division", "Natural Join", "Print Schema", "Reload Data"]
+    options = ["Quit", "Select", "Project", "Rename", "Cartesian Product", "Set Union", "Set Difference", "Set Intersection", "Division", "Natural Join", "Print Schema", "Print Instance", "Reload Data"]
     print("☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆")
     for id, option in enumerate(options):
         print(f"{id} : {option}")
@@ -425,6 +442,8 @@ while True:
     elif command == '10':
         tables_schema()
     elif command == '11':
+        print_data()
+    elif command == '12':
         reload()
     else:
         print("Invalid command. Please enter again.")
