@@ -60,8 +60,10 @@ def store(df):
 def agree_store(df):
 
     agree = input("是否儲存該結果(y/n): ")
+    while ( agree != 'y' and agree != 'Y' and agree != 'n' and agree != 'N' ):
+        agree = input("是否儲存該結果(y/n): ")
 
-    if agree == 'y' or agree ==  'Y':
+    if agree == 'y' or agree == 'Y':
         store(df)
 
 #-----------------------------------------------------------------------------------------------------------select
@@ -78,10 +80,11 @@ def select():
     for i, column in enumerate(dfs[table_name].columns):
         print(f"{i+1}: {column}")
 
-    search_input = input("請輸入要搜尋的列名編號、搜尋值與比較運算子，以空格分隔 (若列名查詢1~5，比較運算子請輸入'=' or '!='): ").split()
+    search_input = input("請輸入要搜尋的列名編號與比較運算子、搜尋值，以空格分隔 (若列名查詢1~5，比較運算子請輸入'=' or '!='): ").split()
     search_columns = [dfs[table_name].columns[int(search_input[0]) - 1]]
-    search_values = search_input[1::2]
-    comparison_operators = search_input[2::3]
+    comparison_operators = search_input[1::2]
+    search_values = search_input[2::3]
+
 
     if len(search_input) % 3 != 0 or ((int(search_input[0]) >= 1 and int(search_input[0]) <= 5) and (search_input[2::3] != '=' and search_input[2::3] != '!=')):
         print("輸入格式錯誤。請按照 '列名編號 搜尋值 比較運算子' 格式輸入，並以空格分隔。")
@@ -267,34 +270,30 @@ def set_inter(df1, df2):
 
 #------------------------------------------------------------------------------------------------------------division
 def division(df1, df2):
-    """
-    intersection_set = set_inter(df1, df2)
-    
-    # 交集為空
-    if intersection_set.empty:
-        return pd.DataFrame()
-    
-    diff1 = set_diff(df1, df2)
-    
-    # 除法結果計算為差集與交集的聯集
-    division_result = union(diff1, intersection_set)
-    
-    return division_result
-    """
+
     # 找到關係 R 中存在但不在 S 中存在的屬性集合 Y
     common_columns = df1.columns.intersection(df2.columns)
-    Y = df1.columns.difference(df2.columns)
+    diff_attributes = df1.columns.difference(df2.columns)
+    if diff_attributes.any() == False:
+        print("無相同屬性")
+        return pd.DataFrame()
 
-    # 初始化結果 DataFrame
-    result = pd.DataFrame(columns=df1.columns)
+    # 取出 df1 和 df2 中不同的屬性部分
+    df1_diff = df1[diff_attributes]
 
-    # 篩選出在 S 中每個值組都存在的值組
-    df2_rows = list(df2.itertuples(index=False, name=None))
-    for _, row in df1.iterrows():
-        if tuple(row[common_columns]) not in df2_rows:
-            result = result.append(row, ignore_index=True)
+    # 生成 df1 和 df2 不同屬性的所有可能組合
+    all_combinations = cartesian_product(df1_diff, df2)
 
-    # 返回結果
+    # 篩選不存在的 Data
+    data_not_exist = set_diff(all_combinations, df1)
+    not_exist = data_not_exist[diff_attributes]
+
+    # 去除 df1 中不存在的 Data
+    result = set_diff(df1_diff, not_exist)
+
+    # 刪除重複行
+    result = result.drop_duplicates()
+
     return result if not result.empty else pd.DataFrame()
 
 #------------------------------------------------------------------------------------------------------------natural_join
