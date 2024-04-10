@@ -12,8 +12,8 @@ sheet_names = [
     '第八世代寶可夢',
     '第九世代寶可夢',
     '全圖鑑',
-    '被除數',
-    '除數',
+    '被除數(Division example)',
+    '除數(Division example)',
 ] 
 dfs = {}
 
@@ -31,6 +31,8 @@ def load():
                 df.at[index, '屬性'] = row['屬性'] + ' / ' + row['額外屬性']
         df = df.drop(columns=['額外屬性'])
         dfs[sheet_name] = df
+
+    dfs['除數(Division example)'] = dfs['除數(Division example)'].drop(columns=['編號', '中文', '日文', '英文', 'HP',	'攻擊',	'防禦',	'特攻',	'特防',	'速度'])
 
 #-----------------------------------------------------------------------------------------------------------測試讀檔
     """
@@ -274,15 +276,14 @@ def set_inter(df1, df2):
 def division(df1, df2):
 
     # 找到 df1 中存在但不在 df2 中存在的屬性集合
-    common_columns = df1.columns.intersection(df2.columns)
     diff_attributes = df1.columns.difference(df2.columns)
+    diff_attributes = df1.columns[df1.columns.isin(diff_attributes)]
     if diff_attributes.any() == False:
         print("無相異屬性")
         return pd.DataFrame()
 
     # 取出 df1 和 df2 中不同的屬性部分
     df1_diff = df1[diff_attributes]
-
     # 生成 df1 和 df2 不同屬性的所有可能組合
     all_combinations = cartesian_product(df1_diff, df2)
 
