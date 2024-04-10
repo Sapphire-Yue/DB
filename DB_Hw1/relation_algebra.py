@@ -23,7 +23,7 @@ def load():
     global dfs, sheet_names
 
     for sheet_name in sheet_names:
-        df = pd.read_excel('DB_Hw1/pokemen.xlsx', sheet_name=sheet_name)
+        df = pd.read_excel('pokemen.xlsx', sheet_name=sheet_name)
         df.columns = ['編號', '中文', '日文', '英文', '屬性', '額外屬性', 'HP',	'攻擊',	'防禦',	'特攻',	'特防',	'速度']
         df = df.dropna(subset=['編號'])
         for index, row in df.iterrows():
